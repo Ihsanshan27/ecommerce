@@ -1,17 +1,17 @@
 <?php
 
-defined('BASEPATH') OR exit('No direct script access allowed');
+defined('BASEPATH') or exit('No direct script access allowed');
 
-class MY_Model extends CI_Model 
+class MY_Model extends CI_Model
 {
 
 	protected $table	= '';
-	protected $perPage	= 5;
+	protected $perPage	= 10;
 
 	public function __construct()
 	{
 		parent::__construct();
-		
+
 		if (!$this->table) {
 			$this->table = strtolower(
 				str_replace('_model', '', get_class($this))
@@ -31,7 +31,8 @@ class MY_Model extends CI_Model
 		$this->load->library('form_validation');
 
 		$this->form_validation->set_error_delimiters(
-			'<small class="form-text text-danger">', '</small>'
+			'<small class="form-text text-danger">',
+			'</small>'
 		);
 		$validationRules = $this->getValidationRules();
 
@@ -171,7 +172,7 @@ class MY_Model extends CI_Model
 	{
 		return $this->db->update($this->table, $data);
 	}
-	
+
 	/**
 	 * Menghapus suatu data dari hasil query dan kondisi
 	 * 
@@ -189,11 +190,13 @@ class MY_Model extends CI_Model
 	 * @param [type] $page
 	 * @return void
 	 */
-	public function paginate($page)
+	public function paginate($page, $perPage = null)
 	{
+		$perPage = $perPage ?: $this->perPage; // Gunakan nilai custom jika ada, atau gunakan default
+
 		$this->db->limit(
-			$this->perPage,
-			$this->calculateRealOffset($page)
+			$perPage,
+			$this->calculateRealOffset($page, $perPage) // Tambahkan parameter $perPage
 		);
 
 		return $this;
@@ -205,12 +208,14 @@ class MY_Model extends CI_Model
 	 * @param [type] $page
 	 * @return void
 	 */
-	public function calculateRealOffset($page)
+	public function calculateRealOffset($page, $perPage = null)
 	{
+		$perPage = $perPage ?: $this->perPage;
+
 		if (is_null($page) || empty($page)) {
 			$offset = 0;
 		} else {
-			$offset = ($page * $this->perPage) - $this->perPage;
+			$offset = ($page * $perPage) - $perPage;
 		}
 
 		return $offset;
@@ -224,17 +229,17 @@ class MY_Model extends CI_Model
 	 * @param [type] $totalRows
 	 * @return void
 	 */
-	public function makePagination($baseUrl, $uriSegment, $totalRows = null)
+	public function makePagination($baseUrl, $uriSegment, $totalRows = null, $perPage = null)
 	{
 		$this->load->library('pagination');
-
+		$perPage = $perPage ?: $this->perPage;
 		$config = [
 			'base_url'			=> $baseUrl,
 			'uri_segment'		=> $uriSegment,
-			'per_page'			=> $this->perPage,
+			'per_page'			=> $perPage,
 			'total_rows'		=> $totalRows,
 			'use_page_numbers'	=> true,
-			
+
 			'full_tag_open'		=> '<ul class="pagination">',
 			'full_tag_close'	=> '</ul>',
 			'attributes'		=> ['class' => 'page-link'],

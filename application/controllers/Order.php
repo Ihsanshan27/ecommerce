@@ -1,8 +1,8 @@
 <?php
 
-defined('BASEPATH') OR exit('No direct script access allowed');
+defined('BASEPATH') or exit('No direct script access allowed');
 
-class Order extends MY_Controller 
+class Order extends MY_Controller
 {
 	public function __construct()
 	{
@@ -17,13 +17,27 @@ class Order extends MY_Controller
 	public function index($page = null)
 	{
 		$data['title']		= 'Admin: Order';
-		$data['content']	= $this->order->orderBy('date', 'DESC')->paginate($page)->get();
-		$data['total_rows']	= $this->order->count();
-		$data['pagination']	= $this->order->makePagination(
-			base_url('order'), 2, $data['total_rows']
+		$data['content']  = $this->product->select(
+			[
+				'product.id',
+				'product.title AS product_title',
+				'product.image',
+				'product.price',
+				'product.is_available',
+				'category.title AS category_title'
+			]
+		)
+			->join('category')
+			->paginate($page)  // Akan menggunakan $perPage = 10 dari MY_Model
+			->get();
+		$data['total_rows'] = $this->product->count();
+		$data['pagination'] = $this->product->makePagination(
+			base_url('product'),
+			2,
+			$data['total_rows']
 		);
 		$data['page']		= 'pages/order/index';
-		
+
 		$this->view($data);
 	}
 
@@ -38,14 +52,16 @@ class Order extends MY_Controller
 		$keyword	= $this->session->userdata('keyword');
 		$data['title']		= 'Admin: Order';
 		$data['content']	= $this->order->like('invoice', $keyword)
-								->orderBy('date', 'DESC')
-								->paginate($page)->get();
+			->orderBy('date', 'DESC')
+			->paginate($page)->get();
 		$data['total_rows']	= $this->order->like('invoice', $keyword)->count();
 		$data['pagination']	= $this->order->makePagination(
-			base_url('order/search'), 3, $data['total_rows']
+			base_url('order/search'),
+			3,
+			$data['total_rows']
 		);
 		$data['page']		= 'pages/order/index';
-		
+
 		$this->view($data);
 	}
 
@@ -65,9 +81,14 @@ class Order extends MY_Controller
 
 		$this->order->table	= 'orders_detail';
 		$data['order_detail']	= $this->order->select([
-				'orders_detail.id_orders', 'orders_detail.id_product', 'orders_detail.qty',
-				'orders_detail.subtotal', 'product.title', 'product.image', 'product.price'
-			])
+			'orders_detail.id_orders',
+			'orders_detail.id_product',
+			'orders_detail.qty',
+			'orders_detail.subtotal',
+			'product.title',
+			'product.image',
+			'product.price'
+		])
 			->join('product')
 			->where('orders_detail.id_orders', $id)
 			->get();
@@ -76,7 +97,7 @@ class Order extends MY_Controller
 			$this->order->table = 'orders_confirm';
 			$data['order_confirm']	= $this->order->where('id_orders', $id)->first();
 		}
-		
+
 		$data['page']			= 'pages/order/detail';
 
 		$this->view($data);
@@ -97,7 +118,6 @@ class Order extends MY_Controller
 
 		redirect(base_url("order/detail/$id"));
 	}
-
 }
 
 /* End of file Order.php */
