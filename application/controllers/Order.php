@@ -12,32 +12,29 @@ class Order extends MY_Controller
 			redirect(base_url('/'));
 			return;
 		}
+
+		// Load model orders dan product
+		$this->load->model('Order_model', 'order');
+		$this->load->model('Product_model', 'product');
 	}
 
 	public function index($page = null)
 	{
-		$data['title']		= 'Admin: Order';
-		$data['content']  = $this->product->select(
-			[
-				'product.id',
-				'product.title AS product_title',
-				'product.image',
-				'product.price',
-				'product.is_available',
-				'category.title AS category_title'
-			]
-		)
-			->join('category')
-			->paginate($page)  // Akan menggunakan $perPage = 10 dari MY_Model
+		$data['title'] = 'Admin: Order';
+		$data['content'] = $this->order
+			->select(['id', 'invoice', 'date', 'total', 'status'])
+			->orderBy('date', 'DESC')
+			->paginate($page)
 			->get();
-		$data['total_rows'] = $this->product->count();
-		$data['pagination'] = $this->product->makePagination(
-			base_url('product'),
+
+		$data['total_rows'] = $this->order->count();
+		$data['pagination'] = $this->order->makePagination(
+			base_url('order'),
 			2,
 			$data['total_rows']
 		);
-		$data['page']		= 'pages/order/index';
 
+		$data['page'] = 'pages/order/index';
 		$this->view($data);
 	}
 
@@ -49,19 +46,22 @@ class Order extends MY_Controller
 			redirect(base_url('order'));
 		}
 
-		$keyword	= $this->session->userdata('keyword');
-		$data['title']		= 'Admin: Order';
-		$data['content']	= $this->order->like('invoice', $keyword)
+		$keyword = $this->session->userdata('keyword');
+
+		$data['title'] = 'Admin: Order';
+		$data['content'] = $this->order->like('invoice', $keyword)
 			->orderBy('date', 'DESC')
-			->paginate($page)->get();
-		$data['total_rows']	= $this->order->like('invoice', $keyword)->count();
-		$data['pagination']	= $this->order->makePagination(
+			->paginate($page)
+			->get();
+
+		$data['total_rows'] = $this->order->like('invoice', $keyword)->count();
+		$data['pagination'] = $this->order->makePagination(
 			base_url('order/search'),
 			3,
 			$data['total_rows']
 		);
-		$data['page']		= 'pages/order/index';
 
+		$data['page'] = 'pages/order/index';
 		$this->view($data);
 	}
 
@@ -73,14 +73,14 @@ class Order extends MY_Controller
 
 	public function detail($id)
 	{
-		$data['order']			= $this->order->where('id', $id)->first();
+		$data['order'] = $this->order->where('id', $id)->first();
 		if (!$data['order']) {
 			$this->session->set_flashdata('warning', 'Data tidak ditemukan.');
 			redirect(base_url('order'));
 		}
 
-		$this->order->table	= 'orders_detail';
-		$data['order_detail']	= $this->order->select([
+		$this->order->table = 'orders_detail';
+		$data['order_detail'] = $this->order->select([
 			'orders_detail.id_orders',
 			'orders_detail.id_product',
 			'orders_detail.qty',
@@ -95,11 +95,10 @@ class Order extends MY_Controller
 
 		if ($data['order']->status !== 'waiting') {
 			$this->order->table = 'orders_confirm';
-			$data['order_confirm']	= $this->order->where('id_orders', $id)->first();
+			$data['order_confirm'] = $this->order->where('id_orders', $id)->first();
 		}
 
-		$data['page']			= 'pages/order/detail';
-
+		$data['page'] = 'pages/order/detail';
 		$this->view($data);
 	}
 
