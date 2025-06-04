@@ -7,7 +7,7 @@
 	<meta name="description" content="">
 	<meta name="author" content="Mark Otto, Jacob Thornton, and Bootstrap contributors">
 	<meta name="generator" content="Jekyll v3.8.5">
-	<title><?= isset($title) ? $title : 'CIShop' ?> - Codeigniter E-Commerce</title>
+	<title><?= isset($title) ? $title : 'Riccika' ?> - E-Commerce</title>
 
 	<link rel="canonical" href="https://getbootstrap.com/docs/4.3/examples/navbar-fixed/">
 
