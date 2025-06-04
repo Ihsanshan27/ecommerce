@@ -79,7 +79,7 @@ class Order extends MY_Controller
 			redirect(base_url('order'));
 		}
 
-		$this->order->table = 'orders_detail';
+		$this->order->setTable('orders_detail');
 		$data['order_detail'] = $this->order->select([
 			'orders_detail.id_orders',
 			'orders_detail.id_product',
@@ -94,13 +94,14 @@ class Order extends MY_Controller
 			->get();
 
 		if ($data['order']->status !== 'waiting') {
-			$this->order->table = 'orders_confirm';
+			$this->order->setTable('orders_confirm');
 			$data['order_confirm'] = $this->order->where('id_orders', $id)->first();
 		}
 
 		$data['page'] = 'pages/order/detail';
 		$this->view($data);
 	}
+
 
 	public function update($id)
 	{
